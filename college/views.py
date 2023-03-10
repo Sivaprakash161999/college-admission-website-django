@@ -10,7 +10,7 @@ from django.views.generic import UpdateView
 # Create your views here.
 
 def college(request):
-    notice = Notice.object.all()
+    notice = Notice.objects.all()
     return render(request, "college.html", {"notice":notice})
 
 def notice(request, myid):
@@ -22,7 +22,7 @@ def application_form(request):
     if not request.user.is_authenticated:
         return redirect("/login")
     hide = Application.objects.filter(user=request.user)
-    if request.method = "POST":
+    if request.method == "POST":
         form = ApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             application = form.save()
@@ -53,8 +53,11 @@ def edit_application(request):
 def status(request):
     if not request.user.is_authenticated:
         return redirect("/login")
-    application = Application.objects.get(user=request.user)
-    return render(request, "status.html", {"application": application})
+    try:
+        application = Application.objects.get(user=request.user)
+        return render(request, "status.html", {"application": application})
+    except Application.DoesNotExist:
+        return redirect("/login")
 
 
 def register(request):
@@ -63,7 +66,8 @@ def register(request):
     else:
         if request.method == "POST":
             username = request.POST['username']
-            email = request.POST['first_name']
+            email = request.POST['email']
+            first_name = request.POST['first_name']
             last_name = request.POST['last_name']
             password1 = request.POST['password1']
             password2 = request.POST['password2']
@@ -90,7 +94,7 @@ def loggedin(request):
             user = authenticate(username=username, password=password)
 
             if user is not None:
-                login(request, user):
+                login(request, user)
                 messages.success(request, "Successfully Logged In")
                 return redirect("/")
             else:
